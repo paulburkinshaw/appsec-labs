@@ -37,8 +37,8 @@ namespace Authentication.API.Controllers
                 case "user1":
                     user = new User { Username = "user1", Role = UserRole.User };
                     break;
-                case "admin":
-                    user = new User { Username = "admin", Role = UserRole.Admin };
+                case "admin1":
+                    user = new User { Username = "admin1", Role = UserRole.Admin };
                     break;
                 default:
                     return Unauthorized();

@@ -1,4 +1,4 @@
-namespace ECoremmerce.Web.Models
+namespace Insecure.Web.Models
 {
     public class DashboardViewModel
     {

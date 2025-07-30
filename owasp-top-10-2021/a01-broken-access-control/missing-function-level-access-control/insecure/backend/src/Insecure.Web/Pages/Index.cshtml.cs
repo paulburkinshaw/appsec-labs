@@ -1,10 +1,10 @@
-using ECoremmerce.Web.Models;
+using Insecure.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text;
 using System.Text.Json;
 
-namespace ECoremmerce.Web.Pages
+namespace Insecure.Web.Pages
 {
     public class IndexModel : PageModel
     {
@@ -27,24 +27,21 @@ namespace ECoremmerce.Web.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var httpClient = _httpClientFactory.CreateClient("Appsec-Labs-IDP.Authentication.API" ?? "");
+            var httpClient = _httpClientFactory.CreateClient("Authentication.API" ?? "");
             using HttpResponseMessage response = await httpClient.PostAsync("account/login",
                 new StringContent(JsonSerializer.Serialize(new User { Username = Username }),
                 Encoding.UTF8, "application/json"
                 ));
 
             if (response.IsSuccessStatusCode)
-            {              
+            {
                 var json = await response.Content.ReadAsStringAsync();
                 var obj = JsonDocument.Parse(json);
                 var jwt = obj.RootElement.GetProperty("accessToken").GetString();
 
                 if (!string.IsNullOrEmpty(jwt))
-                {
-                    HttpContext.Session.SetString("JWT", jwt);    
-                    
-                    return RedirectToPage("/Dashboard");
-                }
+                    return RedirectToPage("/Dashboard", new { jwt });
+
             }
 
             return Page();

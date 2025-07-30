@@ -1,4 +1,4 @@
-namespace ECoremmerce.API.Models
+namespace Insecure.API.Models
 {
     public class Dashboard
     {

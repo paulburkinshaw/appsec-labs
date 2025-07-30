@@ -1,10 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient("ECoremmerce.API", client =>
+builder.Services.AddHttpClient("Insecure.API", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5059/");
 });
-builder.Services.AddHttpClient("Appsec-Labs-IDP.Authentication.API", client =>
+builder.Services.AddHttpClient("Authentication.API", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5122/");
 });

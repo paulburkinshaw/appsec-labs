@@ -1,8 +1,10 @@
-using ECoremmerce.Web.Models;
+using Insecure.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Net.Http.Headers;
 
-namespace ECoremmerce.Web.Pages
+namespace Insecure.Web.Pages
 {
     public class DashboardModel : PageModel
     {
@@ -20,17 +22,13 @@ namespace ECoremmerce.Web.Pages
         }
 
         public async Task OnGetAsync()
-        {
-            var jtw = HttpContext.Session.GetString("JWT");
-
-            var jsonWebToken = new JsonWebToken(jtw ?? string.Empty);
-            var name = jsonWebToken.Claims.Single(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+        {       
+            var jwt = HttpContext.Request.Query["jwt"].ToString();
+            var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);      
             var role = jsonWebToken.Claims.Single(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
-         
-            Username = name ?? "Unknown User";
-
-            var httpClient = _httpClientFactory.CreateClient("ECoremmerce.API" ?? "");
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jtw);
+    
+            var httpClient = _httpClientFactory.CreateClient("Insecure.API" ?? "");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var endpoint = role switch
             {
@@ -40,7 +38,6 @@ namespace ECoremmerce.Web.Pages
             };
            
             using HttpResponseMessage response = await httpClient.GetAsync(endpoint);
-
             if (response.IsSuccessStatusCode)
             {
                 var dashboardViewModel = await response.Content.ReadFromJsonAsync<DashboardViewModel>();

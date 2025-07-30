@@ -7,9 +7,9 @@ Broken access control allows attackers to bypass authorisation, allowing them to
 
 This broad category has been broken down into several sub-categories with insecure/secure versions 
 
-- [Missing Function Level Access Control](./A01MissingFunctionLevelAccessControl/README.md) 
-- [Insecure Direct Object Reference](./insecure-direct-object-reference) 
-- [Weak Account Management](./weak-account-management) 
+1. [Missing Function Level Access Control](./missing-function-level-access-control/README.md) 
+2. [Insecure Direct Object Reference](./insecure-direct-object-reference) 
+3. [Weak Account Management](./weak-account-management) 
 
 ## References
 - [OWASP Top 10 link](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
