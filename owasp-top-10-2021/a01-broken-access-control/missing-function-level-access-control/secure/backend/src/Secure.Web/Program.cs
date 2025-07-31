@@ -1,0 +1,40 @@
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpClient("Secure.API", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5059/");
+});
+builder.Services.AddHttpClient("Authentication.API", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5122/");
+});
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+
+// set up the in-memory session provider with a default in-memory implementation of IDistributedCache
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(1);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+}
+
+app.UseRouting();
+
+app.UseSession();
+
+app.MapStaticAssets();
+app.MapRazorPages()
+   .WithStaticAssets();
+
+app.Run();

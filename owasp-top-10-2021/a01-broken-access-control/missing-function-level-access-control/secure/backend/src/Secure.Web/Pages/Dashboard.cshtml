@@ -1,0 +1,29 @@
+﻿@page
+@model Secure.Web.Pages.DashboardModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Welcome @Model?.Username</h1>
+
+
+
+<h2>Your Work Items:</h2>
+
+<table class="table">  
+    <tbody>
+        @foreach (var workItem in Model?.ViewModel?.WorkItems ?? [])
+        {
+            <tr>
+                <th>
+                    @workItem
+                </th>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+

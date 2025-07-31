@@ -1,11 +1,11 @@
-using Insecure.Web.Models;
+using Secure.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 
-namespace Insecure.Web.Pages
+namespace Secure.Web.Pages
 {
     public class DashboardModel : PageModel
     {
@@ -23,10 +23,10 @@ namespace Insecure.Web.Pages
         }
 
         public async Task OnGetAsync()
-        {
+        {       
             var jwt = HttpContext.Request.Query["jwt"].ToString();
-            var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);
-
+            var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);      
+           
             var roleClaims = jsonWebToken.Claims.Where(x => x.Type == ClaimTypes.Role);
             var roleClaim = roleClaims.Where(x => x.Value == "User" || x.Value == "Admin").FirstOrDefault();
 
