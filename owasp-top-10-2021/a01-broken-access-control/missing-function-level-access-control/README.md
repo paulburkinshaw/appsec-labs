@@ -1,13 +1,31 @@
 # Missing Function Level Access Control
+
+## Table of Contents
+<details>
+<summary>Show</summary>
+
+- [Missing Function Level Access Control](#missing-function-level-access-control)
+  - [Table of Contents](#table-of-contents)
+  - [Summary](#summary)
+  - [Example App Description](#example-app-description)
+  - [Security Requirements](#security-requirements)
+  - [Insecure Version](#insecure-version)
+    - [Vulnerability](#vulnerability)
+    - [Exploitating Vulnerability](#exploitating-vulnerability)
+  - [Secure Version](#secure-version)
+  - [References](#references)
+    - [Links](#links)
+
+</details>
+
+## Summary
 Missing function level access control occurs when an application fails to properly restrict access to certain functions based on user roles or permissions. In other words, users—whether logged in or not—can access functions or endpoints they should not be able to reach. This oversight can allow unauthorized users to perform privileged actions, access sensitive data, or even take control of critical parts of the application.
 
 ## Example App Description
 The example app is made up of: 
-- **Insecure.API** - an ASP.NET Core Web API app with two endoints: `user/dashboard` and `admin/dashboard`.
-- **Insecure.Web** - an ASP.NET Core Web App that displays data returned from the above endpoints on a Dashboard page for logged in users*  
-- **Authentication.API** - an ASP.NET Core Web API app with a `/login` endpoint that accepts a username (either `user1` or `admin1`) and  returns an access token containing a role claim (either `User` or `Admin` depending on the user). The access token is then used by the Insecure.Web app to call the Insecure.API endpoints.
-
-**Login functionality has been implemented as a simple drop down selection with login button with a basic user and an admin user hard coded in the Authentication.API app in order to simulate how the app functions when logging in as a basic user and an admin user.*
+- An ASP.NET Core Web API app with two endoints: `user/dashboard` and `admin/dashboard`.
+- An ASP.NET Core Web App that displays data returned from the above endpoints on a Dashboard page for logged in users*  
+- An ASP.NET Core Web API authentication app with a `/login`[1] endpoint used to simulate login functionality.
 
 ## Security Requirements
 - The `user/dashboard` can be accessed by any logged in user. 
@@ -79,14 +97,43 @@ No `[Authorize(Roles = "Admin")]` check — and that's the vulnerability*
     </details>
 
 ## Secure Version
-In the secure version 
+In the secure version of the app Claims-based authorization[2] has been used to protect the `admin/dashboard` endpoint from being accessed by any user that doesnt have the `Admin` role claim. This has been implemented by applying the `IsAdmin` policy to the `GetAdminDashboard` action by specifying the policy in the authorize attribute.
+```C#
+ [Authorize(Policy = "IsAdmin")]
+ [HttpGet("/admin/dashboard")]
+ public Dashboard GetAdminDashboard()
+ {
+     return new Dashboard
+     {
+         WorkItems = [
+         "Admin Work Item 1",
+         "Admin Work Item 2",
+         "Admin Work Item 3"
+         ]
+     };
+ }
+```
 
-### Remediation
+The policy has been configured in Program.cs as part of the call to `AddAuthorization()` in ConfigureServices.
 
-As with all filters, you can apply the [Authorize] attribute at the controller level to protect all the actions on a controller, to a Razor Page to protect all the page handler
-methods in a page, or even globally to protect every endpoint in your app.
+```C#
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("IsAdmin", policyBuilder
+        => policyBuilder.RequireClaim(ClaimTypes.Role, "Admin"));
+});
+```
+
+This policy is used by the AuthorizationMiddleware to determine whether the user is allowed to execute the endpoint.
+If the user is already authenticated but doesn't have the required claims, a 401 Unauthorized response will be returned, oherwise if the user is not authenticated a 403 Forbidden response will be returend.
+
 
 
 ## References
+[1]: login functionality has been implemented as a simple drop down selection with login button with two users (a basic user and an admin user) hard coded in the Authentication.API app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
+
+[2]: Claims-based authorization uses the current user’s claims to determine whether they’re authorized to execute an action. You define the claims needed to execute an action in a policy.
+
+### Links
 - [OWASP Top 10 link](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
 - External links for further reading
