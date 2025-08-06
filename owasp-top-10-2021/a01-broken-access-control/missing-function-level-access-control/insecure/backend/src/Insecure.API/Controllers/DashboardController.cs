@@ -42,5 +42,18 @@ namespace Insecure.API.Controllers
                 ]
             };
         }
+
+        [HttpGet("/test/dashboard")]
+        public Dashboard GetTest()
+        {
+            return new Dashboard
+            {
+                WorkItems = [
+                "Test Item 1",
+                "Test Item 2",
+                "Test Item 3"
+                ]
+            };
+        }
     }
 }

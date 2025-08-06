@@ -1,5 +1,4 @@
 using Insecure.Web.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Net.Http.Headers;
@@ -28,23 +27,22 @@ namespace Insecure.Web.Pages
             var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);
 
             var roleClaims = jsonWebToken.Claims.Where(x => x.Type == ClaimTypes.Role);
-            var roleClaim = roleClaims.Where(x => x.Value == "User" || x.Value == "Admin").FirstOrDefault();
+            if (roleClaims == null || !roleClaims.Any(x => x.Value == "User" || x.Value == "Admin"))
+                throw new UnauthorizedAccessException();
 
-            var dashboardEndpoint = roleClaim?.Value switch
+            var dashboardEndpoint = roleClaims.FirstOrDefault()?.Value switch
             {
                 "User" => "user/dashboard",
-                "Admin" => "admin/dashboard",
-                _ => throw new UnauthorizedAccessException()
+                "Admin" => "admin/dashboard"
             };
 
-            var httpClient = _httpClientFactory.CreateClient("Secure.API" ?? "");
+            var httpClient = _httpClientFactory.CreateClient("Insecure.API" ?? "");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             using HttpResponseMessage response = await httpClient.GetAsync(dashboardEndpoint);
             if (response.IsSuccessStatusCode)
             {
                 var dashboardViewModel = await response.Content.ReadFromJsonAsync<DashboardViewModel>();
-
                 if (dashboardViewModel != null)
                     ViewModel = dashboardViewModel;
                 else

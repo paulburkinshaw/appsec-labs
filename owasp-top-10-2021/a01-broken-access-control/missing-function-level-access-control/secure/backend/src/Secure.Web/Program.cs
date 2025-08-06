@@ -1,13 +1,22 @@
 var builder = WebApplication.CreateBuilder(args);
 
+var config = builder.Configuration;
+
+var logger = LoggerFactory.Create(config =>
+{
+    config.AddConsole();
+    config.AddConfiguration(builder.Configuration.GetSection("Logging"));
+}).CreateLogger("Program");
+
 builder.Services.AddHttpClient("Secure.API", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5059/");
+    client.BaseAddress = new Uri(config["Services:Secure.API:Url"]);
 });
 builder.Services.AddHttpClient("Authentication.API", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5122/");
+    client.BaseAddress = new Uri(config["Services:Authentication.API:Url"]);
 });
+
 
 // Add services to the container.
 builder.Services.AddRazorPages();

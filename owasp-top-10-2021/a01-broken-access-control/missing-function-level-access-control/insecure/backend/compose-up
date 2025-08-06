@@ -1,0 +1,5 @@
+#!/bin/sh
+dotnet build Insecure.sln
+docker compose -f ../../../../../shared/appsec-labs-idp/docker-compose.yml build
+docker compose -f docker-compose.yml build
+docker compose -p missing-function-level-access-control-insecure -f ../../../../../shared/appsec-labs-idp/docker-compose.yml -f docker-compose.yml up --force-recreate

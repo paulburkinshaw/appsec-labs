@@ -8,11 +8,14 @@
   - [Table of Contents](#table-of-contents)
   - [Summary](#summary)
   - [Example App Description](#example-app-description)
+  - [Running the Apps](#running-the-apps)
   - [Security Requirements](#security-requirements)
   - [Insecure Version](#insecure-version)
     - [Vulnerability](#vulnerability)
     - [Exploitating Vulnerability](#exploitating-vulnerability)
   - [Secure Version](#secure-version)
+  - [Further Enhancements](#further-enhancements)
+  - [Disclaimer](#disclaimer)
   - [References](#references)
     - [Links](#links)
 
@@ -24,8 +27,11 @@ Missing function level access control occurs when an application fails to proper
 ## Example App Description
 The example app is made up of: 
 - An ASP.NET Core Web API app with two endoints: `user/dashboard` and `admin/dashboard`.
-- An ASP.NET Core Web App that displays data returned from the above endpoints on a Dashboard page for logged in users*  
-- An ASP.NET Core Web API authentication app with a `/login`[1] endpoint used to simulate login functionality.
+- An ASP.NET Core Web App that displays data returned from the above endpoints on a Dashboard page for logged in users
+- An ASP.NET Core Web API authentication app with a `/login` endpoint used to simulate login functionality [1].
+
+## Running the Apps
+
 
 ## Security Requirements
 - The `user/dashboard` can be accessed by any logged in user. 
@@ -67,9 +73,7 @@ In the insecure version the two endpoints have been secured with a basic level o
 
 ### Vulnerability
 With the `[Authorize]` attribute applied, if an anonymous user makes a request to `user/dashboard` or `admin/dashboard`, a `401 Unauthorized` response will be returned. However, although the Insecure.Web app does not directly allow a basic user to view the admin dashboard, there is nothing stopping a user logged in as a basic user calling the `admin/dashboard` endpoint directly.
-
-*which can be done with a simple Curl request, or simply making a Get request to the endpoint via Curl or a using an API testing tool like Postman
-No `[Authorize(Roles = "Admin")]` check — and that's the vulnerability*
+This can be done by simply making a Get request to the endpoint via Curl, or a using an API testing tool like Postman.
 
 ### Exploitating Vulnerability
 1. Ensure all the apps are running:
@@ -95,6 +99,8 @@ No `[Authorize(Roles = "Admin")]` check — and that's the vulnerability*
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-admin-dashboard.png" alt="" width="100%"/>
     </details>
+
+---
 
 ## Secure Version
 In the secure version of the app Claims-based authorization[2] has been used to protect the `admin/dashboard` endpoint from being accessed by any user that doesnt have the `Admin` role claim. This has been implemented by applying the `IsAdmin` policy to the `GetAdminDashboard` action by specifying the policy in the authorize attribute.
@@ -123,16 +129,31 @@ builder.Services.AddAuthorization(options =>
         => policyBuilder.RequireClaim(ClaimTypes.Role, "Admin"));
 });
 ```
-
 This policy is used by the AuthorizationMiddleware to determine whether the user is allowed to execute the endpoint.
-If the user is already authenticated but doesn't have the required claims, a 401 Unauthorized response will be returned, oherwise if the user is not authenticated a 403 Forbidden response will be returend.
+If the user is not authenticated, a 401 Unauthorized response will be returned. If the user is authenticated but doesn't have the required claims, a 403 Forbidden response will be returned.
 
+>For production-grade security see the Further Enhancements section below. 
+---
 
+## Further Enhancements
+
+> **Cryptographic Key Storage:**  
+> For demonstration purposes, cryptographic keys are generated and stored in configuration.  
+> **In production, always use a secure key vault (such as Azure Key Vault or AWS KMS) and implement robust access controls for key management and rotation endpoints.**  
+> Ensure that key rotation endpoints are protected with strong authentication and authorization.
+
+> **Logging & Monitoring:**  
+> Sensitive endpoints (such as key rotation) should be logged and monitored for unauthorized access attempts.  
+> This helps detect and respond to potential security incidents.
+
+## Disclaimer  
+>This application is for demonstration and educational purposes only.    
+>Do not use these patterns as-is in production.
 
 ## References
 [1]: login functionality has been implemented as a simple drop down selection with login button with two users (a basic user and an admin user) hard coded in the Authentication.API app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
 
-[2]: Claims-based authorization uses the current user’s claims to determine whether they’re authorized to execute an action. You define the claims needed to execute an action in a policy.
+[2]: Claims-based authorization uses the current user’s claims to determine whether they’re authorized to execute an action. You define the claims needed to execute an action in a policy. Claims-based authorization enforces access control at the function level, not just authentication. This ensures that only users with the correct role or permission can access sensitive endpoints, reducing the risk of privilege escalation. This approach aligns with [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/) controls for access control and key management
 
 ### Links
 - [OWASP Top 10 link](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)

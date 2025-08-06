@@ -1,0 +1,27 @@
+networks:
+  appseclabs:
+    name: appseclabs_network
+
+services:
+  secure.api:
+    container_name: secure_api
+    image: ${DOCKER_REGISTRY-}missing_function_level_access_control_secure_api
+    build:
+      context: .
+      dockerfile: src/Secure.API/Dockerfile
+    networks:
+      - appseclabs
+    ports:
+      - "5059:8080" 
+
+  secure.web:
+    container_name: secure_web
+    image: ${DOCKER_REGISTRY-}missing_function_level_access_control_secure_web
+    build:
+      context: .
+      dockerfile: src/Secure.Web/Dockerfile
+    networks:
+      - appseclabs
+    ports:
+      - "5082:8080"
+

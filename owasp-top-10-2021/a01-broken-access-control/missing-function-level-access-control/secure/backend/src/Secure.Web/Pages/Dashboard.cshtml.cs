@@ -23,18 +23,18 @@ namespace Secure.Web.Pages
         }
 
         public async Task OnGetAsync()
-        {       
+        {
             var jwt = HttpContext.Request.Query["jwt"].ToString();
-            var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);      
-           
-            var roleClaims = jsonWebToken.Claims.Where(x => x.Type == ClaimTypes.Role);
-            var roleClaim = roleClaims.Where(x => x.Value == "User" || x.Value == "Admin").FirstOrDefault();
+            var jsonWebToken = new JsonWebToken(jwt ?? string.Empty);
 
-            var dashboardEndpoint = roleClaim?.Value switch
+            var roleClaims = jsonWebToken.Claims.Where(x => x.Type == ClaimTypes.Role);
+            if (roleClaims == null || !roleClaims.Any(x => x.Value == "User" || x.Value == "Admin"))
+                throw new UnauthorizedAccessException();
+
+            var dashboardEndpoint = roleClaims.FirstOrDefault()?.Value switch
             {
                 "User" => "user/dashboard",
-                "Admin" => "admin/dashboard",
-                _ => throw new UnauthorizedAccessException()
+                "Admin" => "admin/dashboard"
             };
 
             var httpClient = _httpClientFactory.CreateClient("Secure.API" ?? "");
@@ -44,7 +44,6 @@ namespace Secure.Web.Pages
             if (response.IsSuccessStatusCode)
             {
                 var dashboardViewModel = await response.Content.ReadFromJsonAsync<DashboardViewModel>();
-
                 if (dashboardViewModel != null)
                     ViewModel = dashboardViewModel;
                 else
