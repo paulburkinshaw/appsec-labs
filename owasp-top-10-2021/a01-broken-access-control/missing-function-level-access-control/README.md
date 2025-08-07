@@ -45,9 +45,9 @@ The example app is made up of:
 - The data in the response to `user/dashboard` or `admin/dashboard` is displayed on a dashboard page.
  
 ## Security Requirements
-- The `user/dashboard` can be accessed by any logged in user. 
-- The `admin/dashboard` should only be accessible to an admin user only.
-- Neither `user/dashboard` or `admin/dashboard` should be accessible to anonymous users.
+1. The `user/dashboard` can be accessed by any logged in user. 
+2. The `admin/dashboard` should only be accessible to an admin user only.
+3. Neither `user/dashboard` or `admin/dashboard` should be accessible to anonymous users.
 
 ## Insecure Version 
 In the insecure version the two endpoints have been secured with a basic level of authorization -  only authenticated users are allowed to execute the endpoints. This has been implemented by decorating the controller actions with the `Authorize` attribute: 
@@ -99,12 +99,12 @@ This can be done by simply making a **GET** request to the endpoint via cURL, or
     <summary>Show screenshot</summary>
     <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
     </details>
-5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above. You should get the dashboard items for a basic user as you did when logging in to the Insecure.WEB app.
+5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above. You should get the dashboard items for a basic user which is expected and the same data you get when logging in to the web app.
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-user-dashboard.png" alt="" width="100%"/>
     </details>
-6. Execute the cURL command again with the same jwt but this time update the URL to point to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user.
+6. Execute the cURL command again with the same jwt but this time update the URL to point to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user which is obviously not desirable and violates the [2nd Security requirement](#security-requirements): **The `admin/dashboard` endpoint should only be accessible to an admin user.**
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-admin-dashboard.png" alt="" width="100%"/>
