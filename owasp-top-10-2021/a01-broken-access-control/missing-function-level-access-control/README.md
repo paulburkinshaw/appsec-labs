@@ -12,12 +12,16 @@
   - [Security Requirements](#security-requirements)
   - [Insecure Version](#insecure-version)
     - [Vulnerability](#vulnerability)
-    - [Exploitating Vulnerability](#exploitating-vulnerability)
+    - [Exploiting Vulnerability](#exploiting-vulnerability)
   - [Secure Version](#secure-version)
-  - [Running the App](#running-the-app)
-    - [Running the app in Docker containers](#running-the-app-in-docker-containers)
-    - [Running the app in Visual Studio](#running-the-app-in-visual-studio)
-    - [Running the app using the .NET CLI](#running-the-app-using-the-net-cli)
+  - [Running the Lab](#running-the-lab)
+    - [Prerequisites](#prerequisites)
+    - [Docker CLI](#docker-cli)
+    - [Docker in Visual Studio](#docker-in-visual-studio)
+    - [Visual Studio (without Docker)](#visual-studio-without-docker)
+    - [.NET CLI](#net-cli)
+      - [Windows](#windows)
+      - [Linux/macOS](#linuxmacos)
   - [Further Enhancements](#further-enhancements)
   - [Disclaimer](#disclaimer)
   - [References](#references)
@@ -30,8 +34,8 @@ Missing function level access control occurs when an application fails to proper
 
 ## Lab Application
 The example app is made up of: 
-- An ASP.NET Core Web API app with two endoints: `user/dashboard` and `admin/dashboard`.
-- An ASP.NET Core Web App that displays a simple drop down selection with login button with two users to select from- a basic user and an admin user. Once authenticated, a dashboard page is displayed with data from either the `user/dashboard` endpoint, or `admin/dashboard` endpoint depending on which user was selected.
+- An ASP.NET Core Web API app with two endpoints: `user/dashboard` and `admin/dashboard`.
+- An ASP.NET Core Web App that displays a simple dropdown selection with login button that allows selection between a basic user and an admin user. Once authenticated, a dashboard page is displayed with data from either the `user/dashboard` endpoint, or `admin/dashboard` endpoint depending on which user was selected.
 - An ASP.NET Core Web API authentication app with a `/login` endpoint used to simulate login functionality [[1]](#references). 
   
 ### Application Flow
@@ -46,7 +50,7 @@ The example app is made up of:
 - Neither `user/dashboard` or `admin/dashboard` should be accessible to anonymous users.
 
 ## Insecure Version 
-In the insecure version the two endpoints have been secured with a basic level of authorization -  only authenticated users are allowed to execute the endpoints. This has been implemented by decorating the controller actions with with the `Authorize` attribute: 
+In the insecure version the two endpoints have been secured with a basic level of authorization -  only authenticated users are allowed to execute the endpoints. This has been implemented by decorating the controller actions with the `Authorize` attribute: 
 
 ```C#
  [Authorize]
@@ -79,13 +83,13 @@ In the insecure version the two endpoints have been secured with a basic level o
 ```
 
 ### Vulnerability
-With the `[Authorize]` attribute applied, if an anonymous user makes a request to `user/dashboard` or `admin/dashboard`, a `401 Unauthorized` response will be returned. However, although the Insecure.Web app does not directly allow a basic user to view the admin dashboard, there is nothing stopping a user logged in as a basic user calling the `admin/dashboard` endpoint directly.
-This can be done by simply making a Get request to the endpoint via Curl, or a using an API testing tool like Postman.
+With the `[Authorize]` attribute applied, if an anonymous user makes a request to `user/dashboard` or `admin/dashboard`, a `401 Unauthorized` response will be returned. However, although the Insecure.Web app does not directly allow a basic user to view the admin dashboard, there is nothing stopping them from calling the admin/dashboard endpoint directly.
+This can be done by simply making a **GET** request to the endpoint via cURL, or using an API testing tool like Postman.
 
-### Exploitating Vulnerability
-1. Ensure all the individual apps are running (see the [Running the Apps](#running-the-apps) section below)
+### Exploiting Vulnerability
+1. Ensure all the individual apps are running (see the [Running the Lab](#running-the-lab) section below)
 2. Open a browser and navigate to `http://localhost:5082`
-3. Select User 1 from the drop down and click the Login button.
+3. Select User 1 from the dropdown and click the Login button.
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/insecure1-login.png" alt="" width="100%"/>
@@ -95,12 +99,12 @@ This can be done by simply making a Get request to the endpoint via Curl, or a u
     <summary>Show screenshot</summary>
     <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
     </details>
-5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied from the address bar in step 4. You should get the dashboard items for a basic user as you did when logging in to the Insecure.WEB app.
+5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above. You should get the dashboard items for a basic user as you did when logging in to the Insecure.WEB app.
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-user-dashboard.png" alt="" width="100%"/>
     </details>
-6. Execute the Curl command again with the same jwt but this time update the URL to point to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user.
+6. Execute the cURL command again with the same jwt but this time update the URL to point to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user.
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-admin-dashboard.png" alt="" width="100%"/>
@@ -109,7 +113,7 @@ This can be done by simply making a Get request to the endpoint via Curl, or a u
 ---
 
 ## Secure Version
-In the secure version of the app Claims-based authorization[[2]](#references) has been used to protect the `admin/dashboard` endpoint from being accessed by any user that doesnt have the `Admin` role claim. This has been implemented by applying the `IsAdmin` policy to the `GetAdminDashboard` action by specifying the policy in the authorize attribute.
+In the secure version of the app Claims-based authorization[[2]](#references) has been used to protect the `admin/dashboard` endpoint from being accessed by any user that doesn't have the `Admin` role claim. This has been implemented by applying the `IsAdmin` policy to the `GetAdminDashboard` action using the `Authorize` attribute.
 ```C#
  [Authorize(Policy = "IsAdmin")]
  [HttpGet("/admin/dashboard")]
@@ -136,46 +140,88 @@ builder.Services.AddAuthorization(options =>
 });
 ```
 This policy is used by the AuthorizationMiddleware to determine whether the user is allowed to execute the endpoint.
-If the user is not authenticated, a 401 Unauthorized response will be returned. If the user is authenticated but doesn't have the required claims, a 403 Forbidden response will be returned.
+If the user is not authenticated, a **401 Unauthorized** response will be returned. If the user is authenticated but doesn't have the required claims, a **403 Forbidden** response will be returned.
 
 >For production-grade security see the Further Enhancements section below. 
 ---
 
-## Running the App
-### Running the app in Docker containers
-- Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed 
-- Open a Windows command prompt (or terminal if in Linux) in either the [insecure/backend/](./insecure/backend/) folder, or the [secure/backend/](./secure/backend/) folder depending on which version you want to run.
-- Execute either `compose-up.bat` in a Windows command window or `compose-up` in a Linux terminal 
+## Running the Lab
+>Note: This lab is designed to run entirely on local machines. No internet access is required for its functionality once dependencies are installed.
+
+### Prerequisites
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download) or later
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- Visual Studio 2022+ (with Docker and ASP.NET Core workloads) — for Visual Studio scenarios
+
+### Docker CLI
+- Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+- Open a terminal (Command Prompt on Windows or a shell on Linux/macOS) in [this](./) folder  
+- Run `compose-up-insecure.bat` or `compose-up-secure.bat` on Windows  
+- or `./compose-up-insecure.sh` or `./compose-up-secure.sh` on Linux/macOS
 - Open a browser window and enter `http://localhost:5082` in the address bar.
-- You should be presented with a login drop down selection. 
+- You should see a login dropdown selection. 
 
-This is the quickest way to get the app up and running, however if you would like to debug the app and step through the code, see [Running the apps in Visual Studio](#running-the-apps-in-visual-studio) below.
+>This is the quickest way to get the app up and running, however if you would like to debug the app and step through the code see 
+>- [Docker in Visual Studio](#docker-in-visual-studio) if you'd like to debug **and** run the apps in containers.
+>- [Visual Studio](#visual-studio) if you'd just like to debug on your local host.
 
-### Running the app in Visual Studio
+### Docker in Visual Studio
+- Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+- First start the **Authentication.API** app in a container by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
+- Ensure the docker-compose project is selected as the startup project (you’ll see it in bold in Solution Explorer). If not, right click on it and select Set as Startup Project.
+- Press F5 to start up a container for the Authentication.API project in debugging mode (or click the green debug button).
+- Next start the Insecure/Secure API and Web apps in containers by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
+- Ensure the docker-compose project is set as the startup project as above and press F5 to start up containers for the web api and web app projects in debugging mode (or click the green debug button).
+- You should see a login dropdown selection. 
+
+### Visual Studio (without Docker)
 - First start the **Authentication.API** app by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
-- Press F5 to start the Authentication.API project in debugging mode (or click the green run button).
+- Press F5 to start the Authentication.API project in debugging mode (or click the green debug button).
 - Next start the Insecure/Secure API and Web apps by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
 - With the solution open in Visual Studio, right click on the Solution node in Solution Explorer and select **Configure Startup Projects**
 - Click on Multiple startup projects.
 - Select Start from the Action dropdown for the two projects and click Apply.
-- Click Yes to "Do you want to save the changes.."
+- Click Yes when prompted to save the changes.
 - Press F5 to start running both projects in debugging mode (or click the green run button).
 - Open a browser window and enter `http://localhost:5082` in the address bar.
-- You should be presented with a login drop down selection. 
+- You should see a login dropdown selection. 
 
-### Running the app using the .NET CLI
-- Execute `dotnet run` in a command window in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder
-- Execute `dotnet run` in either the [**Insecure.API**](./insecure/backend/src/Insecure.API/) project folder, or the [**Secure.API**](./secure/backend/src/Secure.API/) folder.
-- Execute `dotnet run` in either the [**Insecure.WEB**](./insecure/backend/src/Insecure.Web/) project folder, or the [**Secure.WEB**](./secure/backend/src/Secure.Web/) folder.
-- Open a browser window and enter `http://localhost:5082` in the address bar.
-- You should be presented with a login drop down selection. 
+### .NET CLI
+You can run the applications using the .NET CLI without an IDE or Docker:
+
+#### Windows
+Open a Command Prompt or Powershell window in [this](./) folder  
+Then run either: 
+```cmd
+dotnet-run-insecure.bat
+```
+or 
+```
+dotnet-run-secure.bat
+```
+
+#### Linux/macOS
+Open a terminal in [this](./) folder    
+Then run either:
+```bash
+./dotnet-run-insecure.sh
+```
+ or 
+ ```bash
+ ./dotnet-run-secure.sh
+ ```  
+ Make sure the .sh files are executable:  
+ ```bash
+chmod +x dotnet-run-insecure.sh dotnet-run-secure.sh
+ ```
+ 
+Each app will be launched in its own terminal window (or background process), allowing you to observe each service independently.
 
 ## Further Enhancements
 
 > **Cryptographic Key Storage:**  
 > For demonstration purposes, cryptographic keys are generated and stored in configuration.  
-> **In production, always use a secure key vault (such as Azure Key Vault or AWS KMS) and implement robust access controls for key management and rotation endpoints.**  
-> Ensure that key rotation endpoints are protected with strong authentication and authorization.
+> **In production, always use a secure key vault (such as Azure Key Vault or AWS KMS) and protect key management/rotation with strict access control.**  
 
 > **Logging & Monitoring:**  
 > Sensitive endpoints (such as key rotation) should be logged and monitored for unauthorized access attempts.  
@@ -186,9 +232,9 @@ This is the quickest way to get the app up and running, however if you would lik
 >Do not use these patterns as-is in production.
 
 ## References
-[1]: Login functionality has been implemented as a simple drop down selection with login button with two users (a basic user and an admin user) hard coded in the Authentication.API app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
+[1]: Login functionality has been implemented as a simple dropdown selection with login button with two users (a basic user and an admin user) hard coded in the Authentication.API app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
 
-[2]: Claims-based authorization uses the current user’s claims to determine whether they’re authorized to execute an action. You define the claims needed to execute an action in a policy. Claims-based authorization enforces access control at the function level, not just authentication. This ensures that only users with the correct role or permission can access sensitive endpoints, reducing the risk of privilege escalation. This approach aligns with [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/) controls for access control and key management
+[2]: Claims-based authorization uses the current user’s claims to determine access rights. Policies define which claims are required to execute specific actions. Claims-based authorization enforces access control at the function level, not just authentication. This ensures that only users with the correct role or permission can access sensitive endpoints, reducing the risk of privilege escalation. This approach aligns with [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/) controls for access control and key management
 
 ### Links
 - [OWASP Top 10 link](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
