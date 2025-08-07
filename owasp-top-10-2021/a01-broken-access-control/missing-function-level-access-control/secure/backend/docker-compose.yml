@@ -12,7 +12,7 @@ services:
     networks:
       - appseclabs
     ports:
-      - "5059:8080" 
+      - "8080" 
 
   secure.web:
     container_name: secure_web
@@ -23,5 +23,4 @@ services:
     networks:
       - appseclabs
     ports:
-      - "5082:8080"
-
+      - "8080" 

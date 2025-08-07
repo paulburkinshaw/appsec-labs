@@ -143,7 +143,8 @@ If the user is not authenticated, a 401 Unauthorized response will be returned. 
 
 ## Running the App
 ### Running the app in Docker containers
-- Open a Windows command window (or terminal if in Linux) in either the [insecure/backend/](./insecure/backend/) folder, or the [secure/backend/](./secure/backend/) folder depending on which version you want to run.
+- Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed 
+- Open a Windows command prompt (or terminal if in Linux) in either the [insecure/backend/](./insecure/backend/) folder, or the [secure/backend/](./secure/backend/) folder depending on which version you want to run.
 - Execute either `compose-up.bat` in a Windows command window or `compose-up` in a Linux terminal 
 - Open a browser window and enter `http://localhost:5082` in the address bar.
 - You should be presented with a login drop down selection. 

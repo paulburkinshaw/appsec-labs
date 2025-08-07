@@ -12,4 +12,4 @@ services:
     networks:
       - appseclabs
     ports:
-      - "5122:8080"
+      - "8080"
