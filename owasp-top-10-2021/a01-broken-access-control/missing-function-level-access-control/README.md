@@ -14,6 +14,7 @@
     - [Vulnerability](#vulnerability)
     - [Exploiting Vulnerability](#exploiting-vulnerability)
   - [Secure Version](#secure-version)
+    - [Testing Secure Version](#testing-secure-version)
   - [Running the Lab](#running-the-lab)
     - [Prerequisites](#prerequisites)
     - [Docker CLI](#docker-cli)
@@ -87,6 +88,8 @@ With the `[Authorize]` attribute applied, if an anonymous user makes a request t
 This can be done by simply making a **GET** request to the endpoint via cURL, or using an API testing tool like Postman.
 
 ### Exploiting Vulnerability
+The following steps demonstrate how an unauthorized user can access admin functionality, violating the app’s security requirements.
+
 1. Ensure all the individual apps are running (see the [Running the Lab](#running-the-lab) section below)
 2. Open a browser and navigate to `http://localhost:5082`
 3. Select User 1 from the dropdown and click the Login button.
@@ -99,12 +102,13 @@ This can be done by simply making a **GET** request to the endpoint via cURL, or
     <summary>Show screenshot</summary>
     <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
     </details>
-5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above. You should get the dashboard items for a basic user which is expected and the same data you get when logging in to the web app.
+5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above.  
+You should receive the dashboard items for a basic user — the same data shown when logging into the web app.
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-user-dashboard.png" alt="" width="100%"/>
     </details>
-6. Execute the cURL command again with the same jwt but this time update the URL to point to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user which is obviously not desirable and violates the [2nd Security requirement](#security-requirements): **The `admin/dashboard` endpoint should only be accessible to an admin user.**
+6. Run the cURL command again with the same jwt but update the URL to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]"`. You should now get the dashboard items for the admin user which is obviously not desirable and violates the [2nd Security requirement](#security-requirements): **The `admin/dashboard` endpoint should only be accessible to an admin user.**
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-admin-dashboard.png" alt="" width="100%"/>
@@ -142,7 +146,37 @@ builder.Services.AddAuthorization(options =>
 This policy is used by the AuthorizationMiddleware to determine whether the user is allowed to execute the endpoint.
 If the user is not authenticated, a **401 Unauthorized** response will be returned. If the user is authenticated but doesn't have the required claims, a **403 Forbidden** response will be returned.
 
->For production-grade security see the Further Enhancements section below. 
+### Testing Secure Version
+We’ll now repeat the same steps used in [exploiting the insecure version](#exploiting-vulnerability) to confirm the changes satisfy the [Security Requirements](#security-requirements):
+
+1. Ensure all the individual apps are running (see the [Running the Lab](#running-the-lab) section below)
+2. Open a browser and navigate to `http://localhost:5082`
+3. Select User 1 from the dropdown and click the Login button.
+    <details>
+    <summary>Show screenshot</summary>
+    <img src="./images/insecure1-login.png" alt="" width="100%"/>
+    </details>
+4. Copy the query string value from the browser address bar (everything after `http://localhost:5082/Dashboard?jwt=`).
+    <details>
+    <summary>Show screenshot</summary>
+    <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
+    </details>
+5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above.  
+You should receive the dashboard items for a basic user — the same data shown when logging into the web app.
+    <details>
+    <summary>Show screenshot</summary>
+    <img src="./images/curl-request-user-dashboard.png" alt="" width="100%"/>
+    </details>
+6. Run the cURL command again with the same jwt but update the URL to the `admin/dashboard` endpoint: `curl --location "http://localhost:5059/admin/dashboard" --header "Authorization: Bearer [jwt]" -v`.  
+You should receive a 403 Forbidden response — this is expected and confirms the fix satisfies the [2nd Security requirement](#security-requirements):  
+**The `admin/dashboard` endpoint should only be accessible to an admin user.**. 
+    <details>
+    <summary>Show screenshot</summary>
+    <img src="./images/curl-request-admin-403.png" alt="" width="100%"/>
+    </details>
+
+>For production-grade security see [Further Enhancements](#further-enhancements). 
+
 ---
 
 ## Running the Lab
