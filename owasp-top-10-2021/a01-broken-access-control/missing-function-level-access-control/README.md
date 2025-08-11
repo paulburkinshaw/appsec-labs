@@ -1,5 +1,7 @@
 # Missing Function Level Access Control
-Part of the [AppSec Labs Project](https://github.com/paulburkinshaw/appsec-labs) – A collection of hands-on security vulnerability demonstrations.
+Part of the [AppSec Labs Project](https://github.com/paulburkinshaw/appsec-labs) – A collection of hands-on security vulnerability demonstrations.  
+
+Missing function level access control occurs when an application fails to properly restrict access to certain functions based on user roles or permissions. In other words, users—whether logged in or not—can access functions or endpoints they should not be able to reach. This oversight can allow unauthorized users to perform privileged actions, access sensitive data, or even take control of critical parts of the application.
 
 ## Table of Contents
 <details>
@@ -7,7 +9,7 @@ Part of the [AppSec Labs Project](https://github.com/paulburkinshaw/appsec-labs)
 
 - [Missing Function Level Access Control](#missing-function-level-access-control)
   - [Table of Contents](#table-of-contents)
-  - [Summary](#summary)
+  - [Quick Start](#quick-start)
   - [Lab Application](#lab-application)
     - [Application Flow](#application-flow)
   - [Security Requirements](#security-requirements)
@@ -31,8 +33,19 @@ Part of the [AppSec Labs Project](https://github.com/paulburkinshaw/appsec-labs)
 
 </details>
 
-## Summary
-Missing function level access control occurs when an application fails to properly restrict access to certain functions based on user roles or permissions. In other words, users—whether logged in or not—can access functions or endpoints they should not be able to reach. This oversight can allow unauthorized users to perform privileged actions, access sensitive data, or even take control of critical parts of the application.
+## Quick Start
+Run the insecure version of this lab locally using Docker:
+
+```bash
+git clone https://github.com/paulburkinshaw/appsec-labs.git
+cd appsec-labs/owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control  
+
+./compose-up-insecure.sh   # Linux/macOS
+# or
+compose-up-insecure.bat    # Windows
+```
+- App will be available at: **http://localhost:5082**
+- A **login dropdown** selection will appear on load.
 
 ## Lab Application
 The example app is made up of: 

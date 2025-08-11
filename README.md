@@ -1,6 +1,6 @@
 # AppSec Labs
 
-This repository contains hands-on labs demonstrating common application security vulnerabilities, their exploitation, and secure remediation. Labs are organized by OWASP Top 10 categories and additional custom scenarios.
+This repository contains hands-on labs demonstrating common application security vulnerabilities, their exploitation, and secure remediation. Labs are organized by [OWASP Top 10](https://owasp.org/www-project-top-ten/) categories and additional custom scenarios.
 
 ## Structure
 
@@ -12,7 +12,7 @@ Each folder typically includes:
 
 ---
 
-## Completed Labs
+## Featured Labs
 | Lab | OWASP Category | Skills Demonstrated |
 | --- | -------------- | ------------------- |
 | [Missing Function Level Access Control](./owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control/README.md) | A01: Broken Access Control | AppSec, Access Control, Secure Coding, Exploitation & Remediation |
