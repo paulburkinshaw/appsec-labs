@@ -31,7 +31,6 @@ Missing function level access control occurs when an application fails to proper
     - [.NET CLI](#net-cli)
       - [Windows](#windows)
       - [Linux/macOS](#linuxmacos)
-  - [Further Enhancements](#further-enhancements)
   - [Disclaimer](#disclaimer)
   - [References](#references)
     - [Further Reading](#further-reading)
@@ -204,8 +203,6 @@ As a result:
 
 > Note  
 > For simplicity in this lab, JWTs are not signed or validated. This means they could still be forged (e.g., creating a token with an `Admin` role). This weakness is **intentional** — the goal here is to highlight *Broken Access Control*. Signature validation will be introduced in a later lab.  
->  
->For production-grade security see [Further Enhancements](#further-enhancements). 
 
 ---
 
@@ -297,16 +294,6 @@ chmod +x dotnet-run-insecure.sh dotnet-run-secure.sh
  ```
  
 Each app will be launched in its own terminal window (or background process), allowing you to observe each service independently.
-
-## Further Enhancements
-
-> **Cryptographic Key Storage:**  
-> For demonstration purposes, cryptographic keys are generated and stored in configuration.  
-> **In production, always use a secure key vault (such as Azure Key Vault or AWS KMS) and protect key management/rotation with strict access control.**  
-
-> **Logging & Monitoring:**  
-> Sensitive endpoints (such as key rotation) should be logged and monitored for unauthorized access attempts.  
-> This helps detect and respond to potential security incidents.
 
 ## Disclaimer  
 >This application is for demonstration and educational purposes only.    
