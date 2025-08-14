@@ -16,8 +16,13 @@ Missing function level access control occurs when an application fails to proper
   - [Insecure Version](#insecure-version)
     - [Vulnerability](#vulnerability)
     - [Exploiting Vulnerability](#exploiting-vulnerability)
+    - [Summary](#summary)
   - [Secure Version](#secure-version)
     - [Testing Secure Version](#testing-secure-version)
+    - [Summary](#summary-1)
+  - [Do / Do Not](#do--do-not)
+    - [Do](#do)
+    - [Do Not](#do-not)
   - [Running the Lab](#running-the-lab)
     - [Prerequisites](#prerequisites)
     - [Docker CLI](#docker-cli)
@@ -29,7 +34,7 @@ Missing function level access control occurs when an application fails to proper
   - [Further Enhancements](#further-enhancements)
   - [Disclaimer](#disclaimer)
   - [References](#references)
-    - [Links](#links)
+    - [Further Reading](#further-reading)
 
 </details>
 
@@ -50,12 +55,11 @@ compose-up-insecure.bat    # Windows
 ## Lab Application
 The example app is made up of: 
 - An ASP.NET Core Web API app with two endpoints: `user/dashboard` and `admin/dashboard`.
-- An ASP.NET Core Web App that displays a simple dropdown selection with login button that allows selection between a basic user and an admin user. Once authenticated, a dashboard page is displayed with data from either the `user/dashboard` endpoint, or `admin/dashboard` endpoint depending on which user was selected.
-- An ASP.NET Core Web API authentication app with a `/login` endpoint used to simulate login functionality [[1]](#references). 
+- An ASP.NET Core Web App that displays a Login page with a simple dropdown selection with login button that allows selection between a basic user and an admin user[[1]](#references).  Once authenticated, a dashboard page is displayed with data from either the `user/dashboard` endpoint, or `admin/dashboard` endpoint depending on which user was selected. 
   
 ### Application Flow
-- Selecting a user from the login dropdown sends a request to the authentication app's `/login` endpoint. 
-- An access token is returned from the `/login` endpoint which contains either a `User` or `Admin` role claim. 
+- Select a user from the login dropdown. 
+- An access token is generated which contains either a `User` or `Admin` role claim. 
 - The access token is used in a request to either `user/dashboard` or `admin/dashboard` depending on the role claim.
 - The data in the response to `user/dashboard` or `admin/dashboard` is displayed on a dashboard page.
  
@@ -111,7 +115,7 @@ The following steps demonstrate how an unauthorized user can access admin functi
     <summary>Show screenshot</summary>
     <img src="./images/insecure1-login.png" alt="" width="100%"/>
     </details>
-4. Copy the query string value from the browser address bar (everything after `http://localhost:5082/Dashboard?jwt=`).
+4. Copy the query string value from the browser address bar (everything after `http://localhost:5082/?jwt=`).
     <details>
     <summary>Show screenshot</summary>
     <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
@@ -127,6 +131,13 @@ You should receive the dashboard items for a basic user — the same data shown 
     <summary>Show screenshot</summary>
     <img src="./images/curl-request-admin-dashboard.png" alt="" width="100%"/>
     </details>
+
+### Summary
+In this insecure version, the JWT is exposed in the query string and passed directly to the API. Because the API only checks for a valid token and whether a user is authenticated and does not enforce any further authorization, any logged in user can access admin functionality.
+The next section demonstrates the secure version, where claims-based authorization prevents this escalation.
+
+>Note  
+>In this insecure version, the JWT is exposed in the query string, in practice, tokens should never be passed via query strings — this is simplified for demonstration purposes.  
 
 ---
 
@@ -170,12 +181,7 @@ We’ll now repeat the same steps used in [exploiting the insecure version](#exp
     <summary>Show screenshot</summary>
     <img src="./images/insecure1-login.png" alt="" width="100%"/>
     </details>
-4. Copy the query string value from the browser address bar (everything after `http://localhost:5082/Dashboard?jwt=`).
-    <details>
-    <summary>Show screenshot</summary>
-    <img src="./images/insecure2-token-querystring.png" alt="" width="100%"/>
-    </details>
-5. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you copied above.  
+4. Open a command window and execute: `curl --location "http://localhost:5059/user/dashboard" --header "Authorization: Bearer [jwt]"` replacing `[jwt]` with the token you received during login.  
 You should receive the dashboard items for a basic user — the same data shown when logging into the web app.
     <details>
     <summary>Show screenshot</summary>
@@ -189,7 +195,39 @@ You should receive a 403 Forbidden response — this is expected and confirms th
     <img src="./images/curl-request-admin-403.png" alt="" width="100%"/>
     </details>
 
+### Summary
+In this secure version, the JWT is no longer passed in the query string and instead is stored securely in the session. The API now enforces **claims-based authorization**, which ensures that only users with the correct role can access admin functionality.  
+
+As a result:  
+- Normal users attempting to access `/admin/dashboard` receive a **403 Forbidden** response.  
+- Admin users can still access their dashboard as expected.  
+
+> Note  
+> For simplicity in this lab, JWTs are not signed or validated. This means they could still be forged (e.g., creating a token with an `Admin` role). This weakness is **intentional** — the goal here is to highlight *Broken Access Control*. Signature validation will be introduced in a later lab.  
+>  
 >For production-grade security see [Further Enhancements](#further-enhancements). 
+
+---
+
+## Do / Do Not 
+
+### Do
+- **Enforce role- or permission-based checks on every sensitive endpoint** — use `[Authorize(Policy = "...")]` or equivalent.
+- **Apply authorization at the server side**, never just in the client UI or routing logic.
+- **Deny by default** — configure policies so that endpoints require explicit access rules.
+- **Validate tokens and claims on every request**, not just at login.
+- **Log and monitor access attempts** — especially failed or unauthorized requests.
+- **Test access controls** — include automated security tests for both positive and negative access cases.
+- **Follow the Principle of Least Privilege** — give accounts only the permissions they need.
+  
+### Do Not
+- **Rely solely on authentication** — logging in does not mean a user can do everything.
+- **Assume the client enforces security** — users can bypass UI and call APIs directly.
+- **Expose admin or privileged endpoints without role checks**.
+- **Return the same HTTP status for all failures** when it obscures security — differentiate `401 Unauthorized` and `403 Forbidden`.
+- **Hardcode secrets or keys in code** — use secure storage such as Azure Key Vault or AWS KMS.
+- **Skip verifying JWT claims** — simply having a token does not guarantee proper role/permission.
+- **Forget to test for insecure direct access** — attackers will.
 
 ---
 
@@ -215,17 +253,12 @@ You should receive a 403 Forbidden response — this is expected and confirms th
 
 ### Docker in Visual Studio
 - Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-- First start the **Authentication.API** app in a container by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
-- Ensure the docker-compose project is selected as the startup project (you’ll see it in bold in Solution Explorer). If not, right click on it and select Set as Startup Project.
-- Press F5 to start up a container for the Authentication.API project in debugging mode (or click the green debug button).
-- Next start the Insecure/Secure API and Web apps in containers by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
+- First start the Insecure/Secure API and Web apps in containers by opening Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
 - Ensure the docker-compose project is set as the startup project as above and press F5 to start up containers for the web api and web app projects in debugging mode (or click the green debug button).
 - You should see a login dropdown selection. 
 
 ### Visual Studio (without Docker)
-- First start the **Authentication.API** app by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
-- Press F5 to start the Authentication.API project in debugging mode (or click the green debug button).
-- Next start the Insecure/Secure API and Web apps by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
+- First start the Insecure/Secure API and Web apps by Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
 - With the solution open in Visual Studio, right click on the Solution node in Solution Explorer and select **Configure Startup Projects**
 - Click on Multiple startup projects.
 - Select Start from the Action dropdown for the two projects and click Apply.
@@ -280,10 +313,10 @@ Each app will be launched in its own terminal window (or background process), al
 >Do not use these patterns as-is in production.
 
 ## References
-[1]: Login functionality has been implemented as a simple dropdown selection with login button with two users (a basic user and an admin user) hard coded in the Authentication.API app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
+[1]: Login functionality has been implemented as a simple dropdown selection with login button with two users (a basic user and an admin user) hard coded in the web app. It has been implemented this way in order to show how the app functions when logging in as different users without needing a complete identity provider solution.
 
 [2]: Claims-based authorization uses the current user’s claims to determine access rights. Policies define which claims are required to execute specific actions. Claims-based authorization enforces access control at the function level, not just authentication. This ensures that only users with the correct role or permission can access sensitive endpoints, reducing the risk of privilege escalation. This approach aligns with [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/) controls for access control and key management
 
-### Links
-- [OWASP Top 10 link](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
-- External links for further reading
+### Further Reading
+- [OWASP Top 10 - Broken Access Control](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
+- [OWASP DotNet Security Cheat Sheet - Missing Function Level Access Control](https://cheatsheetseries.owasp.org/cheatsheets/DotNet_Security_Cheat_Sheet.html#missing-function-level-access-control)

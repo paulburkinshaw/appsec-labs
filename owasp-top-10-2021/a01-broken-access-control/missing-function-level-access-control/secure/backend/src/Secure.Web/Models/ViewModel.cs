@@ -1,6 +1,6 @@
 namespace Secure.Web.Models
 {
-    public class DashboardViewModel
+    public class ViewModel
     {
         public string Username { get; set; }
         public string[]? WorkItems { get; set; }

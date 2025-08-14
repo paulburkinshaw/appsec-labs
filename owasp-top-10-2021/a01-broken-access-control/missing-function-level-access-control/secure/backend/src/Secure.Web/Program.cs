@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var config = builder.Configuration;
@@ -12,23 +14,27 @@ builder.Services.AddHttpClient("Secure.API", client =>
 {
     client.BaseAddress = new Uri(config["Services:Secure.API:Url"]);
 });
-builder.Services.AddHttpClient("Authentication.API", client =>
-{
-    client.BaseAddress = new Uri(config["Services:Authentication.API:Url"]);
-});
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-
-// set up the in-memory session provider with a default in-memory implementation of IDistributedCache
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
+builder.Services.AddRazorPages(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(1);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AddPageRoute("/Account/Login", "/login");
+    options.Conventions.AddPageRoute("/Account/Logout", "/logout");   
 });
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
@@ -40,7 +46,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorPages()
