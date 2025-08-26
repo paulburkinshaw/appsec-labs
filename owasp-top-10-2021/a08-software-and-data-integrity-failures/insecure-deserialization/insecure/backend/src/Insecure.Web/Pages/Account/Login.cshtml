@@ -1,0 +1,13 @@
+﻿@page "/Account/Login"
+@model Insecure.Web.Pages.Acount.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<form method="post">
+    <label>Username:</label>
+    <select asp-for="Username">
+        <option value="user1">User 1</option>
+    </select>
+    <button type="submit">Login</button>
+</form>

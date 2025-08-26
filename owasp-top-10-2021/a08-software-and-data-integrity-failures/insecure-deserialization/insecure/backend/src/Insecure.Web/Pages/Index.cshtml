@@ -1,0 +1,72 @@
+﻿@page
+@using Insecure.API.Models
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<h1>Welcome @Model?.ViewModel.Username</h1>
+
+<h3>Sorting and Filters</h3>
+
+<form asp-page-handler="Sort">
+    <table>
+        <tbody>
+            <tr>
+                <th>Sort By</th>
+                <th>Ascending/Descending</th>
+            </tr>
+            <tr>
+                <td>
+                    <select asp-for="ViewModel.DashboardSortSettings.WorkItemsSortBy"
+                            asp-items="Html.GetEnumSelectList<WorkItemsSortBy>()">
+                    </select>
+                </td>
+                <td>
+                    <select asp-for="ViewModel.DashboardSortSettings.WorkItemsSortOrder"
+                            asp-items="Html.GetEnumSelectList<WorkItemsSortOrder>()">
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button type="submit">Apply Sort</button>
+</form>
+
+
+<br />
+
+<h2>Your Work Items:</h2>
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>
+                Title
+            </th>
+            <th>
+                Due Date
+            </th>
+            <th>
+                Date Added
+            </th>
+        </tr>
+        @foreach (var workItem in Model?.ViewModel?.WorkItems ?? [])
+        {
+            <tr>
+                <td>
+                    @workItem.Title
+                </td>
+
+                <td>
+                    @workItem.DueDate.ToString("d")
+                </td>
+
+                <td>
+                    @workItem.DateCreated.ToString("d")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
