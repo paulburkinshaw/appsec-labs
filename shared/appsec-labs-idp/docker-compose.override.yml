@@ -1,7 +1,0 @@
-services:
-  authentication.api:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=DockerLocal
-      - ASPNETCORE_HTTP_PORTS=8080
-    ports:
-      - "5122:8080"

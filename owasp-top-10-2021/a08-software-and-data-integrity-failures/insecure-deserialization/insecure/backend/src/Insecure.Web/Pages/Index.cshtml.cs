@@ -63,8 +63,7 @@ namespace Insecure.Web.Pages
                     ViewModel.DashboardSortSettings = dashboardSortSettings;
                 }
                 catch (JsonSerializationException ex)
-                {
-                    // Oops: developer tries to help debug by including full deserialized object in error
+                {                 
                     var deserializedObj = JsonConvert.DeserializeObject(cookieValue, JsonSerializerSettings);
                     throw new JsonSerializationException(
                         $"Dashboard settings type mismatch. Full object: {JsonConvert.SerializeObject(deserializedObj)}",
@@ -121,7 +120,6 @@ namespace Insecure.Web.Pages
 
             var dashboard = await response.Content.ReadFromJsonAsync<Dashboard>();
             ViewModel.WorkItems = dashboard?.WorkItems ?? new List<WorkItem>();
-
         }
     }
 }

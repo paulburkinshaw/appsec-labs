@@ -83,71 +83,52 @@ The example app is made up of:
 In the insecure version of the app, the `dashboardSortSettings` cookie is created using Json.Net `JsonConvert` class to serialize an object containing the user's sorting and filtering preferences. The serialized data is then stored in the cookie without any validation or integrity checks. This allows an attacker to modify the serialized data in the cookie and potentially execute arbitrary code when the data is deserialized on the server side.
 
 ### Vulnerability
-The application deserializes untrusted data directly from a client-supplied cookie:
+The application deserializes untrusted data directly from a client-supplied cookie:  
 
-```C#
-var cookieValue = Request.Cookies["dashboardSortSettings"];
-if (!string.IsNullOrEmpty(cookieValue))
-{
-    try
-    {
-        dashboardSortSettings = JsonConvert.DeserializeObject<DashboardSortSettings>(cookieValue, JsonSerializerSettings);
-        if (dashboardSortSettings == null)
-            throw new Exception($"unable to deserialize cookie value: {cookieValue}");
+<img src="./images/insecure-deserialize-cookie.png" alt="" width="100%"/>
 
-        ViewModel.DashboardSortSettings = dashboardSortSettings;
-    }
-    catch (JsonSerializationException ex)
-    {
-        // Oops: developer tries to help debug by including full deserialized object in error
-        var deserializedObj = JsonConvert.DeserializeObject(cookieValue, JsonSerializerSettings);
-        throw new JsonSerializationException(
-            $"Dashboard settings type mismatch. Full object: {JsonConvert.SerializeObject(deserializedObj)}",
-            ex
-        );
-    }
-}
-```
-Key issue:
+Key issues:
 
 - The app uses `TypeNameHandling.All` (in `JsonSerializerSettings`), which allows polymorphic deserialization.
-- An attacker can provide a different type (not `DashboardSortSettings`) that still exists in the application’s codebase.
-- In this lab, we abuse the forgotten `CustomLogger` class.
-- The `CustomLogger` class is not properly secured and can be exploited by an attacker to execute arbitrary code.
-- The attacker can craft a malicious payload that, when deserialized, calls methods on the CustomLogger class with attacker-controlled arguments.
-
-This allows an attacker to modify the serialized data in the cookie and potentially execute arbitrary code when the data is deserialized on the server side.
+  <details>
+      <summary>Show screenshot</summary>
+      <img src="./images/insecure-typenamehandling.png" alt="" width="100%"/>
+  </details>
+- An attacker can provide a different types other than the expected `DashboardSortSettings` type.
+- There is a seemingly innocuous `CustomLogger` class in the codebase that has a `LogfilePath` property with a setter that is used by the class to read and write log files to disk.
+  <details>
+      <summary>Show screenshot</summary>
+      <img src="./images/insecure-custom-logger.png" alt="" width="100%"/>
+  </details>
+- The `CustomLogger` class is not properly secured and can be exploited by an attacker to gain access to the contents of the file specified in `LogfilePath`.
 
 ### Exploiting Vulnerability
 An attacker can exploit this vulnerability by crafting a malicious payload that can replace the existing serialized data in the `dashboardSortSettings` cookie. For example, the attacker can create a payload that, when deserialized, calls the `LogFilePath` setter on the `CustomLogger` class with an attacker-controlled file path such as `appsettings.json` which exists in the application root folder. The attacker can then view the contents of the file in the error message returned by the application which includes the full deserialized object in the error message.
 
-```C#
-catch (JsonSerializationException ex)
-{
-    // Oops: developer tries to help debug by including full deserialized object in error
-    var deserializedObj = JsonConvert.DeserializeObject(cookieValue, JsonSerializerSettings);
-    throw new JsonSerializationException(
-        $"Dashboard settings type mismatch. Full object: {JsonConvert.SerializeObject(deserializedObj)}",
-        ex
-    );
-}
-```
 <img src="./images/insecure-error-message.png" alt="" width="100%"/>
 
 As can be seen in the error message above, the contents of the `appsettings.json` file are displayed, which in this case contains a piece of sensitive information - a database connection string. 
 
-The steps to carry out the above are: 
-- Craft a malicious payload that replaces the existing serialized data in the `dashboardSortSettings` cookie.
+<img src="./images/insecure-error-message-connection-string.png" alt="" width="100%"/>
+
+The steps to carry out the exploitation are: 
+- Start by crafting a malicious payload in `json` format that will be used to replace the value in the `dashboardSortSettings` cookie.
    ```json
    {
     "$type": "Insecure.Web.Util.CustomLogger, Insecure.Web",
     "LogfilePath": "appsettings.json"
    }
    ```
-- Use Cyber Chef to URL Encode the above payload.
-  <img src="./images/insecure-cyber-chef-url-encode.PNG" alt="" width="100%"/>
-- Replace the existing serialized data in the `dashboardSortSettings` cookie with the crafted payload.
-   <img src="./images/insecure-cookie-replaced.PNG" alt="" width="100%"/>
+- URL encode the payload, there are many freely available tools you can use for this task, [Cyber Chef](https://gchq.github.io/CyberChef/#recipe=URL_Encode(true)) is one such tool.
+  <details>
+      <summary>Show screenshot</summary>
+      <img src="./images/insecure-cyber-chef-url-encode.PNG" alt="" width="100%"/>
+  </details>
+- Copy Output value and paste it into the existing serialized data in the `dashboardSortSettings` cookie.
+  <details>
+      <summary>Show screenshot</summary>
+      <img src="./images/insecure-cookie-replaced.PNG" alt="" width="100%"/>
+  </details>
 - Trigger the deserialization process on the server-side by refreshing the dashboard page.
 - View the contents of the `appsettings.json` file in the error message returned by the application.
 
@@ -217,16 +198,12 @@ Everything in the above list applies to Json.Net as well, plus the following:
 
 ### Docker in Visual Studio
 - Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-- First start the **Authentication.API** app in a container by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
-- Ensure the docker-compose project is selected as the startup project (you’ll see it in bold in Solution Explorer). If not, right click on it and select Set as Startup Project.
-- Press F5 to start up a container for the Authentication.API project in debugging mode (or click the green debug button).
-- Next start the Insecure/Secure API and Web apps in containers by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
-- Ensure the docker-compose project is set as the startup project as above and press F5 to start up containers for the web api and web app projects in debugging mode (or click the green debug button). 
+- First start the Insecure/Secure API and Web apps in containers by opening Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
+- Ensure the docker-compose project is set as the startup project as above and press F5 to start up containers for the web api and web app projects in debugging mode (or click the green debug button).
+- You should see a login dropdown selection. 
 
 ### Visual Studio (without Docker)
-- First start the **Authentication.API** app by opening an instance of Visual Studio and clicking File/Open/Project/Solution and select the **Appsec-Labs-IDP.sln** located in the [**Authentication.API**](../../../shared/appsec-labs-idp/Authentication.API/) project folder.
-- Press F5 to start the Authentication.API project in debugging mode (or click the green debug button).
-- Next start the Insecure/Secure API and Web apps by opening another instance of Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
+- First start the Insecure/Secure API and Web apps by Visual Studio and clicking File/Open/Project/Solution and select either **Insecure.sln** or **Secure.sln** located in [/insecure/backend/](./insecure/backend/) or [/secure/backend/](./secure/backend/) depending on which version of the app you'd like to run.
 - With the solution open in Visual Studio, right click on the Solution node in Solution Explorer and select **Configure Startup Projects**
 - Click on Multiple startup projects.
 - Select Start from the Action dropdown for the two projects and click Apply.

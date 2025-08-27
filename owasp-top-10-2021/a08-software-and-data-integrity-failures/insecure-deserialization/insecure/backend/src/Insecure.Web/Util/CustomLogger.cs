@@ -1,5 +1,4 @@
 ﻿
-
 namespace Insecure.Web.Util
 {
     // TODO: Find out if this class is still needed or if it can be replaced now we are using the ASP.NET Core logging framework.
