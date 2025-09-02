@@ -239,8 +239,8 @@ var signature = SignData(serializedData);
 #endregion
 
 #region Set Cookie                    
-Response.Cookies.Append("dashboardSortSettings", serializedData);
-Response.Cookies.Append("dashboardSortSettings.sig", signature);
+Response.Cookies.Append("dashboardSortSettings", serializedData, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict });
+Response.Cookies.Append("dashboardSortSettings.sig", signature, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict });
 #endregion
 ```
 
@@ -257,6 +257,11 @@ dashboardSortSettings = JsonConvert.DeserializeObject<DashboardSortSettings>(ser
 
 #### 3. Cookie Security Flags
 We have added the `HttpOnly`, `SameSite`, and `Secure` flags to the cookies to help mitigate the risk of client-side script accessing the cookies and to ensure they are only sent over HTTPS.
+
+```csharp            
+Response.Cookies.Append("dashboardSortSettings", serializedData, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict });
+Response.Cookies.Append("dashboardSortSettings.sig", signature, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict });
+```
 
 ##### HttpOnly Flag
 The `HttpOnly` flag is used to prevent client-side scripts from accessing the cookie. This helps mitigate the risk of cross-site scripting (XSS) attacks, as even if an attacker is able to inject malicious scripts into the page, they will not be able to read the contents of the `HttpOnly` cookies.
