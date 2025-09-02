@@ -16,16 +16,30 @@ Each folder typically includes:
 | Lab | OWASP Category | Skills Demonstrated |
 | --- | -------------- | ------------------- |
 | [Missing Function Level Access Control](./owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control/README.md) | A01: Broken Access Control | AppSec, Access Control, Secure Coding, Exploitation & Remediation |
+| [Insecure Deserialization](./owasp-top-10-2021/a08-software-and-data-integrity-failures/insecure-deserialization/README.md) | A08: Software and Data Integrity Failures | AppSec, Secure Coding, Exploitation & Remediation |
 
 ---
 
 ## Quick Start
 
-Run the featured vulnerable lab locally using Docker:
+Run the featured vulnerable labs locally using Docker:
+
+### Missing Function Level Access Control
 
 ```bash
 git clone https://github.com/paulburkinshaw/appsec-labs.git
 cd appsec-labs/owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control  
+
+./compose-up-insecure.sh   # Linux/macOS
+# or
+compose-up-insecure.bat    # Windows
+```
+
+### Insecure Deserialization
+
+```bash
+git clone https://github.com/paulburkinshaw/appsec-labs.git
+cd appsec-labs/owasp-top-10-2021/a08-software-and-data-integrity-failures/insecure-deserialization
 
 ./compose-up-insecure.sh   # Linux/macOS
 # or
