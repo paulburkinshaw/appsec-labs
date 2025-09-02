@@ -20,7 +20,7 @@ Missing function level access control occurs when an application fails to proper
   - [Secure Version](#secure-version)
     - [Testing Secure Version](#testing-secure-version)
     - [Summary](#summary-1)
-  - [Do / Do Not](#do--do-not)
+  - [Mitigation Guidance](#mitigation-guidance)
     - [Do](#do)
     - [Do Not](#do-not)
   - [Running the Lab](#running-the-lab)
@@ -206,7 +206,7 @@ As a result:
 
 ---
 
-## Do / Do Not 
+## Mitigation Guidance
 
 ### Do
 - **Enforce role- or permission-based checks on every sensitive endpoint** — use `[Authorize(Policy = "...")]` or equivalent.

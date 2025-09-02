@@ -5,7 +5,7 @@ networks:
 services:
   insecure.api:
     container_name: insecure_api
-    image: ${DOCKER_REGISTRY-}missing_function_level_access_control_insecure_api
+    image: ${DOCKER_REGISTRY-}insecure_deserialization_insecure_api
     build:
       context: .
       dockerfile: src/Insecure.API/Dockerfile
@@ -16,7 +16,7 @@ services:
 
   insecure.web:
     container_name: insecure_web
-    image: ${DOCKER_REGISTRY-}missing_function_level_access_control_insecure_web
+    image: ${DOCKER_REGISTRY-}insecure_deserialization_insecure_web
     build:
       context: .
       dockerfile: src/Insecure.Web/Dockerfile

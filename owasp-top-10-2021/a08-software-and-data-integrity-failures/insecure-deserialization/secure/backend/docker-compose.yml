@@ -1,0 +1,26 @@
+networks:
+  appseclabs:
+    name: appseclabs_network
+
+services:
+  secure.api:
+    container_name: secure_api
+    image: ${DOCKER_REGISTRY-}insecure_deserialization_secure_api
+    build:
+      context: .
+      dockerfile: src/secure.API/Dockerfile
+    networks:
+      - appseclabs
+    ports:
+      - "8080" 
+
+  secure.web:
+    container_name: secure_web
+    image: ${DOCKER_REGISTRY-}insecure_deserialization_secure_web
+    build:
+      context: .
+      dockerfile: src/secure.Web/Dockerfile
+    networks:
+      - appseclabs
+    ports:
+      - "8080"
