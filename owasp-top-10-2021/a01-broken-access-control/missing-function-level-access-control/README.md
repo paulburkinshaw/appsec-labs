@@ -224,7 +224,7 @@ As a result:
 - **Return the same HTTP status for all failures** when it obscures security — differentiate `401 Unauthorized` and `403 Forbidden`.
 - **Hardcode secrets or keys in code** — use secure storage such as Azure Key Vault or AWS KMS.
 - **Skip verifying JWT claims** — simply having a token does not guarantee proper role/permission.
-- **Forget to test for insecure direct access** — attackers will.
+- **Forget to test for insecure direct access** — attackers will try to call endpoints directly.
 
 ---
 

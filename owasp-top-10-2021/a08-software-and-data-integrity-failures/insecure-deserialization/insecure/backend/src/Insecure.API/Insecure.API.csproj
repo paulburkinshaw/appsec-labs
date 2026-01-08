@@ -15,4 +15,12 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <Target Name="RemoveAppSettingsFromPublish" BeforeTargets="AssignTargetPaths" Condition="'$(ExcludeApiAppSettings)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="appsettings*.json" />
+      <Content Remove="appsettings*.json" />
+      <None Remove="appsettings*.json" />
+    </ItemGroup>
+  </Target>
+
 </Project>
