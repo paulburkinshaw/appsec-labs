@@ -15,8 +15,8 @@ Each folder typically includes:
 ## Featured Labs
 | Lab | OWASP Category | Skills Demonstrated |
 | --- | -------------- | ------------------- |
-| [Missing Function Level Access Control](./owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control/README.md) | A01: Broken Access Control | AppSec, Access Control, Secure Coding, Exploitation & Remediation |
-| [Insecure Deserialization](./owasp-top-10-2021/a08-software-and-data-integrity-failures/insecure-deserialization/README.md) | A08: Software and Data Integrity Failures | AppSec, Secure Coding, Exploitation & Remediation |
+| [Missing Function Level Access Control](./owasp-top-10-2025/a01-broken-access-control/missing-function-level-access-control/README.md) | A01: Broken Access Control | AppSec, Access Control, Secure Coding, Exploitation & Remediation |
+| [Insecure Deserialization](./owasp-top-10-2025/a08-software-and-data-integrity-failures/insecure-deserialization/README.md) | A08: Software and Data Integrity Failures | AppSec, Secure Coding, Exploitation & Remediation |
 
 ---
 
@@ -28,7 +28,7 @@ Run the featured vulnerable labs locally using Docker:
 
 ```bash
 git clone https://github.com/paulburkinshaw/appsec-labs.git
-cd appsec-labs/owasp-top-10-2021/a01-broken-access-control/missing-function-level-access-control  
+cd appsec-labs/owasp-top-10-2025/a01-broken-access-control/missing-function-level-access-control  
 
 ./compose-up-insecure.sh   # Linux/macOS
 # or
@@ -39,14 +39,15 @@ compose-up-insecure.bat    # Windows
 
 ```bash
 git clone https://github.com/paulburkinshaw/appsec-labs.git
-cd appsec-labs/owasp-top-10-2021/a08-software-and-data-integrity-failures/insecure-deserialization
+cd appsec-labs/owasp-top-10-2025/a08-software-and-data-integrity-failures/insecure-deserialization
 
 ./compose-up-insecure.sh   # Linux/macOS
 # or
 compose-up-insecure.bat    # Windows
 ```
 
-- App will be available at: **http://localhost:5082**
+### Accessing the Labs
+- Open your browser and navigate to: **http://localhost:5082**
 - A **login dropdown** selection will appear on load.
 
-To run the secure (remediated) version, replace insecure with secure in the script name.
+To run the secure (remediated) version, replace insecure with secure in the script name: `compose-up-secure.sh` or `compose-up-secure.bat`

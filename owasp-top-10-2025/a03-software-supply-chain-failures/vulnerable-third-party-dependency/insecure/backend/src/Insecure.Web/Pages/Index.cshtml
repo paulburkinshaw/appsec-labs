@@ -1,0 +1,49 @@
+﻿@page
+@using Insecure.API.Models
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<h1>Welcome @Model?.ViewModel.Username</h1>
+
+<h2>Your Work Items:</h2>
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>
+                Title
+            </th>
+            <th>
+                Due Date
+            </th>
+            <th>
+                Date Added
+            </th>
+            <th>
+                Notes
+            </th>
+        </tr>
+        @foreach (var workItem in Model?.ViewModel?.WorkItems ?? [])
+        {
+            <tr>
+                <td>
+                    @workItem.Title
+                </td>
+
+                <td>
+                    @workItem.DueDate.ToString("d")
+                </td>
+
+                <td>
+                    @workItem.DateCreated.ToString("d")
+                </td>
+
+                <td>
+                    @Html.Raw(@workItem.Notes)<!-- TODO: Wrap @workItem.Notes with insecure sanitizer here -->
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,15 @@
+services:
+  insecure.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerLocal
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5059:8080"
+
+  insecure.web:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerLocal
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5082:8080"
+

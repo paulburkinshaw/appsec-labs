@@ -1,0 +1,15 @@
+services:
+  secure.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerLocal
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5059:8080"
+
+  secure.web:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DockerLocal
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5082:8080"
+
